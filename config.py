@@ -1,10 +1,10 @@
 """
-FastMCP Blockchain Analysis - Configuration
-모든 설정을 통합 관리하는 설정 파일
+FastMCP Blockchain Analysis - Configuration (Fixed)
+설정 및 환경변수 관리 - dataclass 에러 수정
 """
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 
@@ -37,17 +37,18 @@ class Config:
     REPETITION_PENALTY: float = 1.1
     
     # =============================================================================
-    # 해커톤 데모 설정
+    # 데이터톤 데모 설정 (default_factory 사용)
     # =============================================================================
-    DEMO_WALLET: str = "0x742d35Cc6798C532c5Ae5e4a5b6a4c7c4a24ba"
+    DEMO_WALLET: str = "0x0837b6fe718823989e397d02c95532abd6147b2d"
     
-    DEMO_QUERIES: List[str] = [
+    # List 필드는 default_factory 사용
+    DEMO_QUERIES: List[str] = field(default_factory=lambda: [
         "Show me the current DeFi market overview",
         "What is the TVL of Uniswap protocol?",
-        f"Analyze the portfolio for wallet {DEMO_WALLET}",
+        "Analyze the portfolio for wallet 0x0837b6fe718823989e397d02c95532abd6147b2d",
         "Get the transaction history for the same wallet",
         "Compare Uniswap and SushiSwap TVL"
-    ]
+    ])
     
     # =============================================================================
     # 시스템 설정
@@ -58,9 +59,9 @@ class Config:
     CACHE_ENABLED: bool = True
     
     # =============================================================================
-    # 알려진 토큰 및 프로토콜
+    # 알려진 토큰 및 프로토콜 (default_factory 사용)
     # =============================================================================
-    KNOWN_TOKENS: Dict[str, str] = {
+    KNOWN_TOKENS: Dict[str, str] = field(default_factory=lambda: {
         'USDC': '0xA0b86a33E6417C9C4E1f03a6C0fA8b7b63Ad2C6A',
         'USDT': '0xdAC17F958D2ee523a2206206994597C13D831ec7',
         'WETH': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -69,9 +70,9 @@ class Config:
         'AAVE': '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
         'COMP': '0xc00e94Cb662C3520282E6f5717214004A7f26888',
         'MKR': '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2'
-    }
+    })
     
-    DEFI_PROTOCOLS: Dict[str, str] = {
+    DEFI_PROTOCOLS: Dict[str, str] = field(default_factory=lambda: {
         'uniswap': 'Uniswap V3',
         'aave': 'Aave',
         'compound': 'Compound',
@@ -80,7 +81,7 @@ class Config:
         'curve': 'Curve Finance',
         'yearn': 'Yearn Finance',
         'synthetix': 'Synthetix'
-    }
+    })
     
     # =============================================================================
     # 검증 메서드
@@ -140,6 +141,108 @@ CACHE_DIR = CONFIG.CACHE_DIR
 DEBUG_MODE = CONFIG.DEBUG_MODE
 DEMO_QUERIES = CONFIG.DEMO_QUERIES
 DEMO_WALLET = CONFIG.DEMO_WALLET
+
+# 사용 가능한 함수 정의 (dataclass 밖으로 이동)
+AVAILABLE_FUNCTIONS = [
+    {
+        'name': 'get_wallets_holding_token',
+        'description': 'Get a list of wallets holding a specific token',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'token_name': {
+                    'type': 'string',
+                    'description': 'The name of the token to search for'
+                }
+            },
+            'required': ['token_name']
+        }
+    },
+    {
+        'name': 'cross_reference_wallets',
+        'description': 'Find common wallets between two wallet lists',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'wallets1': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'description': 'First list of wallet addresses'
+                },
+                'wallets2': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'description': 'Second list of wallet addresses'
+                }
+            },
+            'required': ['wallets1', 'wallets2']
+        }
+    },
+    {
+        'name': 'get_total_holdings',
+        'description': 'Get the total holdings value for a wallet',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'wallet_address': {
+                    'type': 'string',
+                    'description': 'The wallet address to query'
+                }
+            },
+            'required': ['wallet_address']
+        }
+    },
+    {
+        'name': 'filter_wallets_by_total_holdings',
+        'description': 'Filter wallets with total holdings over a threshold',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'wallets': {
+                    'type': 'array',
+                    'items': {'type': 'string'},
+                    'description': 'List of wallet addresses to filter'
+                },
+                'threshold': {
+                    'type': 'number',
+                    'description': 'Minimum total holdings amount'
+                }
+            },
+            'required': ['wallets', 'threshold']
+        }
+    }
+]
+
+# Mock 데이터 (dataclass 밖으로 이동)
+MOCK_DATA = {
+    'wallet_db': {
+        'GameToken': [
+            {'address': '0xWallet1', 'amount': 12000},
+            {'address': '0xWallet2', 'amount': 8000},
+            {'address': '0xWallet3', 'amount': 15000},
+            {'address': '0xWallet5', 'amount': 25000}
+        ],
+        'AIToken': [
+            {'address': '0xWallet1', 'amount': 7000},
+            {'address': '0xWallet4', 'amount': 20000},
+            {'address': '0xWallet3', 'amount': 5000},
+            {'address': '0xWallet6', 'amount': 30000}
+        ],
+        'DeFiToken': [
+            {'address': '0xWallet2', 'amount': 18000},
+            {'address': '0xWallet7', 'amount': 35000}
+        ]
+    },
+    'holdings_db': {
+        '0xWallet1': 20000,
+        '0xWallet2': 8000,
+        '0xWallet3': 20000,
+        '0xWallet4': 20000,
+        '0xWallet5': 25000,
+        '0xWallet6': 30000,
+        '0xWallet7': 35000
+    }
+}
 
 if __name__ == "__main__":
     print("🔧 FastMCP Blockchain Analysis - Configuration Check")
