@@ -1,0 +1,22 @@
+# =============================================================================
+# FastMCP Blockchain Analysis - Python Dependencies
+# =============================================================================
+
+# Core ML/AI Libraries
+torch>=2.0.0
+transformers>=4.30.0
+accelerate>=0.20.0
+huggingface_hub>=0.15.0
+
+# FastMCP (if available, otherwise comment out)
+# fastmcp>=0.1.0
+
+# HTTP & Async Libraries
+aiohttp>=3.8.0
+requests>=2.31.0
+
+# Utility Libraries
+python-dotenv>=1.0.0
+
+# Optional: For better performance
+# nvidia-ml-py3>=7.352.0  # GPU monitoring
